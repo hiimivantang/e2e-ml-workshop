@@ -2,16 +2,16 @@
 
 ## 00-setup.py
 
-Downloading fraud model training datasets from Google drive.
-Original datasets are from https://www.kaggle.com/competitions/ieee-fraud-detection/data
+Downloading fraud model training datasets from Google drive.\
+Original datasets are from https://www.kaggle.com/competitions/ieee-fraud-detection/data\
 
 
 ## 01a-fraud detection model building.py 
 
-Feature engineering
-Registering features into multiple feature tables
-Model training and experiment auto-tracking with mlflow
-Log model to register feature lookup logic
+Feature engineering\
+Registering features into multiple feature tables\
+Model training and experiment auto-tracking with mlflow\
+Log model to register feature lookup logic\
 
 
 # TODO: 
@@ -19,27 +19,27 @@ Log model to register feature lookup logic
 
 ## 02-feature store deep dive
 
-Adding new features to existing feature table
-Merge/upsert feature tables
-Publishing features to online store i.e. DynamoDB
+Adding new features to existing feature table\
+Merge/upsert feature tables\
+Publishing features to online store i.e. DynamoDB\
 
 
 ## 03-MLOps CI/CD and webhooks
 
-Setup webhooks for trigger CI build, i.e. model signature and bias testing
-Setup model serving endpoint
+Setup webhooks for trigger CI build, i.e. model signature and bias testing\
+Setup model serving endpoint\
 
 
 ## 04-Realtime inference with automatic feature lookup (from online store)
 
-Create model serving endpoint
-Score the deployed model
+Create model serving endpoint\
+Score the deployed model\
 
 
 ## 05-data and model drift detection
 
-Feature, label, prediction, and concept drift detection
-Triggering retraining of model
+Feature, label, prediction, and concept drift detection\
+Triggering retraining of model\
 
 
 
