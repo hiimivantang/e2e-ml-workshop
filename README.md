@@ -8,6 +8,7 @@
 
 ## 01a-fraud detection model building.py 
 
+- [ ] Show high-level solution architecture
 - [x] Feature engineering
 - [x] Registering features into multiple feature tables
 - [x] Model training and experiment auto-tracking with mlflow
@@ -23,14 +24,15 @@
 
 ## 03-MLOps CI/CD and webhooks
 
+- [ ] Illustrate how CI/CD tooling (e.g. Jenkins) is integrated with model registry
 - [ ] Setup webhooks for trigger CI build, i.e. model signature and bias testing
 - [ ] Setup model serving endpoint
 
 
 ## 04-Realtime inference with automatic feature lookup (from online store)
-
+- [ ] Illustrate how serverless model endpoint is integrated with offline/online feature store for automatic feature lookup
 - [ ] Create model serving endpoint
-- [ ] Score the deployed model
+- [ ] Score the deployed model via REST API request
 
 
 ## 05-data and model drift detection
