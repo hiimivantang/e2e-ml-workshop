@@ -11,6 +11,7 @@
 - Delta Lake and it's important role for Machine Learning 
 - Solution architecture for realtime fraud detection use case
 - Hands-on:
+
 [ ] Creating fully-managed Databricks clusters
 [ ] ETL pipeline with automatic data quality validation 
 
