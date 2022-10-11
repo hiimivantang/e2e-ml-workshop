@@ -22,17 +22,16 @@
 - [ ] Publishing features to online store i.e. DynamoDB
 
 
-## 03-MLOps CI/CD and webhooks
-
-- [ ] Illustrate how CI/CD tooling (e.g. Jenkins) is integrated with model registry
-- [ ] Setup webhooks for trigger CI build, i.e. model signature and bias testing
-- [ ] Setup model serving endpoint
-
-
-## 04-Realtime inference with automatic feature lookup (from online store)
+## 03-Realtime inference with automatic feature lookup (from online store)
 - [ ] Illustrate how serverless model endpoint is integrated with offline/online feature store for automatic feature lookup
 - [ ] Create model serving endpoint
 - [ ] Score the deployed model via REST API request
+
+
+## 04-MLOps CI/CD and webhooks
+
+- [ ] Illustrate how CI/CD tooling (e.g. Jenkins) is integrated with model registry
+- [ ] Setup webhooks for trigger CI build, i.e. model signature and bias testing
 
 
 ## 05-data and model drift detection
