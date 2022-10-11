@@ -11,16 +11,16 @@
 - Delta Lake and it's important role for Machine Learning 
 - Solution architecture for realtime fraud detection use case
 - Hands-on:
-  [ ] Creating fully-managed Databricks clusters
-  [ ] ETL pipeline with automatic data quality validation 
+[ ] Creating fully-managed Databricks clusters
+[ ] ETL pipeline with automatic data quality validation 
 
 ## Part 2: Introduction to Databricks Machine Learning (30 mins)
 - Basic overview of Databricks Machine Learning: 
   - Databricks ML runtime, Experiments, Feature Store, Model Registry
 - Hands-on: 
-  [ ] experiment tracking 
-  [ ] model training
-  [ ] registering features to feature store
+[ ] experiment tracking 
+[ ] model training
+[ ] registering features to feature store
 
 
 ## Part 3: Developing and managing Machine Learning Models (45 mins)
@@ -28,14 +28,14 @@
 - Feature store deep dive and best practices
 - Manage model lifecycle using MLflow model registry
 - Hands-on: 
-  [ ] Feature Store CRUD
-  [ ] Synchronizing to online feature store
+[ ] Feature Store CRUD
+[ ] Synchronizing to online feature store
 
 
 ## Part 4: Deploying and Monitoring Machine Learning Models (45 mins)
 - Compare and contrast ML deployment strategies
 - Data and concept drift monitoring with Databricks
 - Hands-on:
-  [ ] Deploy a machine learning pipeline in a real-time environment using MLflow model serving, with automatic feature lookup 
-  [ ] Scoring deployed model via REST API request 
+[ ] Deploy a machine learning pipeline in a real-time environment using MLflow model serving, with automatic feature lookup 
+[ ] Scoring deployed model via REST API request 
 
