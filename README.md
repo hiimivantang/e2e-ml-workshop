@@ -5,7 +5,6 @@
 - [x] Downloading fraud model training datasets from Google drive.
 - [x] Original datasets are from https://www.kaggle.com/competitions/ieee-fraud-detection/data
 
-
 ## 01a-fraud detection model building.py 
 
 - [ ] Show high-level solution architecture
@@ -14,25 +13,21 @@
 - [x] Model training and experiment auto-tracking with mlflow
 - [x] Log model to register feature lookup logic
 
-
 ## 02-feature store deep dive
 
 - [ ] Adding new features to existing feature table
 - [ ] Merge/upsert feature tables
 - [ ] Publishing features to online store i.e. DynamoDB
 
-
 ## 03-Realtime inference with automatic feature lookup (from online store)
 - [ ] Illustrate how serverless model endpoint is integrated with offline/online feature store for automatic feature lookup
 - [ ] Create model serving endpoint
 - [ ] Score the deployed model via REST API request
 
-
 ## 04-MLOps CI/CD and webhooks
 
 - [ ] Illustrate how CI/CD tooling (e.g. Jenkins) is integrated with model registry
 - [ ] Setup webhooks for trigger CI build, i.e. model signature and bias testing
-
 
 ## 05-data and model drift detection
 
