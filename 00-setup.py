@@ -5,8 +5,8 @@
 
 import gdown
 
-gdown.download("https://drive.google.com/file/d/1Oa8AI1jHmiCdYG1VT_6Fc4vdW9UgwHMq/view?usp=sharing", output='/tmp/raw_transactions.csv', fuzzy=True)
-gdown.download("https://drive.google.com/file/d/15HPqrOJlZ_NpPyfjTUQagQjQeKIurf04/view?usp=sharing", output='/tmp/raw_identity.csv', fuzzy=True)
+gdown.download("https://drive.google.com/file/d/1Oa8AI1jHmiCdYG1VT_6Fc4vdW9UgwHMq/view?usp=sharing", output='/dbfs/tmp/raw_transaction.csv', fuzzy=True)
+gdown.download("https://drive.google.com/file/d/15HPqrOJlZ_NpPyfjTUQagQjQeKIurf04/view?usp=sharing", output='/dbfs/tmp/raw_identity.csv', fuzzy=True)
 
 # COMMAND ----------
 
