@@ -1,4 +1,8 @@
 # Databricks notebook source
+# MAGIC %run ./00-setup
+
+# COMMAND ----------
+
 import numpy as np                   # array, vector, matrix calculations
 import pandas as pd                  # DataFrame handling
 import xgboost as xgb                # gradient boosting machines (GBMs)
@@ -12,6 +16,8 @@ import mlflow.spark
 # MAGIC %md
 # MAGIC 
 # MAGIC ## Featurization
+# MAGIC 
+# MAGIC ![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2FCBT-JOURNAL%2FPGXlTpZ9aL.png?alt=media&token=9feaa0a6-3fe7-4ddf-ae9b-b62979bf9887)
 
 # COMMAND ----------
 
