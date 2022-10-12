@@ -20,6 +20,10 @@ transaction_df = transaction_df.toDF(*columns)
 
 # COMMAND ----------
 
+spark.sql('CREATE DATABASE IF NOT EXISTS ieee_cis')
+
+# COMMAND ----------
+
 spark.sql('DROP TABLE IF EXISTS ieee_cis.raw_identity')
 spark.sql('DROP TABLE IF EXISTS ieee_cis.raw_transaction')
 
