@@ -1,11 +1,5 @@
 # Deck contents
 
-## Pain Points
-- Poor reusability of data and ai assets (i.e. features and models) resulting in 80% of model development time spent on data preparation, feature development, and testing.
-- Basic MLOps maturity resulting in 6-8 months for model deployment.
-- Lack of data and model validation/monitoring
-
-
 ## Part 1: Introduction to Databricks (30 mins)
 - Lakehouse overview
 - Delta Lake and it's important role for Machine Learning 
