@@ -3,13 +3,14 @@
 
 # COMMAND ----------
 
-import numpy as np                   # array, vector, matrix calculations
-import pandas as pd                  # DataFrame handling
-import xgboost as xgb                # gradient boosting machines (GBMs)
+import numpy as np  # array, vector, matrix calculations
+import pandas as pd  # DataFrame handling
+import pyspark.pandas as ps
+import xgboost as xgb  # gradient boosting machines (GBMs)
 import mlflow
-import os
 import mlflow.pyfunc
 import mlflow.spark
+import os
 
 # COMMAND ----------
 
@@ -22,7 +23,7 @@ import mlflow.spark
 # COMMAND ----------
 
 transactions = table('ieee_cis.raw_transaction')
-display(transactions)
+display(transactions.describe())
 
 # COMMAND ----------
 
@@ -61,18 +62,15 @@ categoricalCols = ['card1',
                    'addr1',
                    'addr2']
 
-numericalCols = ['dist1','dist2']+['C' + str(x) for x in range(1,14)]+['D' + str(x) for x in range(1,15)]+['V' + str(x) for x in range(1,339)]
+numericalCols = ['dist1', 'dist2'] + ['C' + str(x) for x in range(1, 14)] + ['D' + str(x) for x in range(1, 15)] + [
+    'V' + str(x) for x in range(1, 339)]
 
 # COMMAND ----------
 
-import pyspark.pandas as ps
-import numpy as np
-
-# COMMAND ----------
-
-numerical_features = transactions.select(*(['TransactionID']+numericalCols))
+numerical_features = transactions.select(*(['TransactionID'] + numericalCols))
 numerical_features = numerical_features.toDF(*(c.replace('.', '_') for c in numerical_features.columns))
 numerical_features = numerical_features.toDF(*(c.replace(' ', '_') for c in numerical_features.columns))
+
 
 categorical_features = ps.get_dummies(transactions.select(['TransactionID']+stringCategoricalCols+categoricalCols).pandas_api(), columns=stringCategoricalCols+categoricalCols, dummy_na=True, dtype=np.int32).to_spark()
 categorical_features = categorical_features.toDF(*(c.replace('.', '_') for c in categorical_features.columns))
@@ -81,45 +79,47 @@ categorical_features = categorical_features.toDF(*(c.replace(' ', '_') for c in 
 # COMMAND ----------
 
 from databricks.feature_store import FeatureStoreClient
-
 fs = FeatureStoreClient()
-try:
-  categorical_feature_table = fs.create_table(
-    name='ieee_cis.transaction_categorical_features',
-    primary_keys='TransactionID',
-    schema=categorical_features.schema,
-    description='These features are derived from ieee_cis.raw_transactions and the label column (isFraud) has being dropped'
-  )
-except ValueError as v:
-  if "already exists with a different schema" in str(v):
-    pass
-  else:
-    raise
-except Exception as  e:
-  raise
 
-spark.sql("ALTER TABLE ieee_cis.transaction_categorical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
+try:
+    categorical_feature_table = fs.create_table(
+        name='ieee_cis.transaction_categorical_features',
+        primary_keys='TransactionID',
+        schema=categorical_features.schema,
+        description='These features are derived from ieee_cis.raw_transactions and the label column (isFraud) has being dropped'
+    )
+except ValueError as v:
+    if "already exists with a different schema" in str(v):
+        pass
+    else:
+        raise
+except Exception as e:
+    raise
+
+spark.sql(
+    "ALTER TABLE ieee_cis.transaction_categorical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
 
 fs.write_table(df=categorical_features, name='ieee_cis.transaction_categorical_features', mode='overwrite')
 
 # COMMAND ----------
 
 try:
-  numerical_feature_table = fs.create_table(
-    name='ieee_cis.transaction_numerical_features',
-    primary_keys='TransactionID',
-    schema=numerical_features.schema,
-    description='These features are derived from ieee_cis.raw_transactions and the label column (isFraud) has being dropped'
-  )
+    numerical_feature_table = fs.create_table(
+        name='ieee_cis.transaction_numerical_features',
+        primary_keys='TransactionID',
+        schema=numerical_features.schema,
+        description='These features are derived from ieee_cis.raw_transactions and the label column (isFraud) has being dropped'
+    )
 except ValueError as v:
-  if "already exists with a different schema" in str(v):
-    pass
-  else:
+    if "already exists with a different schema" in str(v):
+        pass
+    else:
+        raise
+except Exception as e:
     raise
-except Exception as  e:
-  raise
 
-spark.sql("ALTER TABLE ieee_cis.transaction_numerical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
+spark.sql(
+    "ALTER TABLE ieee_cis.transaction_numerical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
 fs.write_table(df=numerical_features, name='ieee_cis.transaction_numerical_features', mode='overwrite')
 
 # COMMAND ----------
@@ -127,37 +127,36 @@ fs.write_table(df=numerical_features, name='ieee_cis.transaction_numerical_featu
 from databricks.feature_store import FeatureLookup
 
 feature_lookups = [
-  FeatureLookup(
-    table_name = 'ieee_cis.transaction_numerical_features',
-    lookup_key = ['TransactionID']
-  ),
-  FeatureLookup(
-    table_name = 'ieee_cis.transaction_categorical_features',
-    lookup_key = ['TransactionID']
-  )
+    FeatureLookup(
+        table_name='ieee_cis.transaction_numerical_features',
+        lookup_key=['TransactionID']
+    ),
+    FeatureLookup(
+        table_name='ieee_cis.transaction_categorical_features',
+        lookup_key=['TransactionID']
+    )
 ]
 
 # COMMAND ----------
 
+import xgboost
+from xgboost import XGBRegressor
+from sklearn.model_selection import cross_val_score
+
 def fit(X, y):
-  """
-   :return: dict with fields 'loss' (scalar loss) and 'model' fitted model instance
-  """
-  import xgboost
-  from xgboost import XGBRegressor
-  from sklearn.model_selection import cross_val_score
-  
-  _model =  XGBRegressor(learning_rate=0.3,
+    """
+     :return: dict with fields 'loss' (scalar loss) and 'model' fitted model instance
+    """
+    _model = XGBRegressor(learning_rate=0.3,
                           gamma=5,
                           max_depth=8,
                           n_estimators=15,
-                          min_child_weight = 9, objective='reg:squarederror')
- 
-  xgb_model = _model.fit(X, y)
-  
-  score = -cross_val_score(_model, X, y, scoring='neg_mean_squared_error').mean()
-  
-  return {'loss': score, 'model': xgb_model}
+                          min_child_weight=9, objective='reg:squarederror')
+
+    xgb_model = _model.fit(X, y)
+    score = -cross_val_score(_model, X, y, scoring='neg_mean_squared_error').mean()
+
+    return {'loss': score, 'model': xgb_model}
 
 # COMMAND ----------
 
@@ -168,19 +167,55 @@ fs = FeatureStoreClient()
 mlflow.xgboost.autolog()
 
 with mlflow.start_run():
-  training_set = fs.create_training_set(
-  df = table('ieee_cis.raw_transaction').select(*['TransactionID','isFraud']),
-  feature_lookups = feature_lookups,
-  label = 'isFraud')
-  
-  training_df = training_set.load_df().toPandas()
-  
-  X_train = training_df.drop(['isFraud'], axis=1)
-  y_train = training_df.isFraud
-  train_dict = fit(X=X_train, y=y_train)
-  xgb_model = train_dict['model']
-  mlflow.log_metric('loss', train_dict['loss'])
+    training_set = fs.create_training_set(
+        df=table('ieee_cis.raw_transaction').select(*['TransactionID', 'isFraud']),
+        feature_lookups=feature_lookups,
+        label='isFraud')
+
+    training_df = training_set.load_df().toPandas()
+
+    X_train = training_df.drop(['isFraud'], axis=1)
+    y_train = training_df.isFraud
+    train_dict = fit(X=X_train, y=y_train)
+    xgb_model = train_dict['model']
+    mlflow.log_metric('loss', train_dict['loss'])
+
+    # We log the model in the Feature Store under the name 'model_fraud'
+    fs.log_model(
+      xgb_model,
+      "model",
+      flavor=mlflow.xgboost,
+      training_set=training_set,
+      registered_model_name="model_fraud"
+    )
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ### Use the logged model for inference 
+# MAGIC We use the model we have just trained on the Feature Store. By passing it only the TransactionID, it will automatically fetch other features in the Feature Store and predict the probability that the transaction ID is a fraud.
 
+# COMMAND ----------
+
+from pyspark.sql.types import StructType, StructField, IntegerType
+
+# We create a DataFrame with an existing transactionID we want to test (2995503)
+schema = StructType([StructField("TransactionID", IntegerType(), True)])
+inference_df = spark.createDataFrame(pd.DataFrame(columns=["TransactionID"], data=[2995503]), schema=schema)
+predictions = fs.score_batch(
+  'models:/model_fraud/1',
+  df=inference_df
+)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC Here are the results. During inference, the features related to the TransactionID number 2995503 were looked up to predict the fraud probability.
+
+# COMMAND ----------
+
+display(predictions)
+
+# COMMAND ----------
+
+display(predictions.select("TransactionID", "prediction"))
