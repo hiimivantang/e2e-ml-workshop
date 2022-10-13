@@ -74,7 +74,7 @@ numerical_features = transactions.select(*(['TransactionID']+numericalCols))
 numerical_features = numerical_features.toDF(*(c.replace('.', '_') for c in numerical_features.columns))
 numerical_features = numerical_features.toDF(*(c.replace(' ', '_') for c in numerical_features.columns))
 
-categorical_features = ps.get_dummies(transactions.select(['TransactionID']+stringCategoricalCols+categoricalCols).pandas_api(), dummy_na=True, dtype=np.int32).to_spark()
+categorical_features = ps.get_dummies(transactions.select(['TransactionID']+stringCategoricalCols+categoricalCols).pandas_api(), columns=stringCategoricalCols+categoricalCols, dummy_na=True, dtype=np.int32).to_spark()
 categorical_features = categorical_features.toDF(*(c.replace('.', '_') for c in categorical_features.columns))
 categorical_features = categorical_features.toDF(*(c.replace(' ', '_') for c in categorical_features.columns))
 
@@ -180,4 +180,7 @@ with mlflow.start_run():
   train_dict = fit(X=X_train, y=y_train)
   xgb_model = train_dict['model']
   mlflow.log_metric('loss', train_dict['loss'])
-  
+
+# COMMAND ----------
+
+
