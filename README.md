@@ -26,7 +26,7 @@
 - [ ] Setup webhooks for trigger CI build, i.e. model signature and bias testing
 
 ## (julie) 04-Realtime inference with automatic feature lookup (from online store)
-- [ ] Illustrate how serverless model endpoint is integrated with offline/online feature store for automatic feature lookup
+- [x] Illustrate how serverless model endpoint is integrated with offline/online feature store for automatic feature lookup
 - [ ] Deploy model serving endpoint
 - [ ] Score the deployed model via REST API request
 
