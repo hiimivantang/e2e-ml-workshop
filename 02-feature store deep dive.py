@@ -23,6 +23,43 @@ fs = FeatureStoreClient()
 
 # COMMAND ----------
 
+# MAGIC %md 
+# MAGIC ### Creating Offline Feature Store tables
+
+# COMMAND ----------
+
+# Reminder of how we created numerical features table
+numericalCols = ['dist1', 'dist2'] + ['C' + str(x) for x in range(1, 14)] + ['D' + str(x) for x in range(1, 15)] + [
+    'V' + str(x) for x in range(1, 339)]
+
+numerical_features = transactions.select(*(['TransactionID'] + numericalCols))
+numerical_features = numerical_features.toDF(*(c.replace('.', '_') for c in numerical_features.columns))
+numerical_features = numerical_features.toDF(*(c.replace(' ', '_') for c in numerical_features.columns))
+
+# COMMAND ----------
+
+try:
+    numerical_feature_table = fs.create_table(
+        name='ieee_cis.transaction_numerical_features',
+        primary_keys='TransactionID',
+        schema=numerical_features.schema,
+        description='These features are derived from ieee_cis.raw_transactions and the label column (isFraud) has being dropped'
+    )
+except ValueError as v:
+    if "already exists with a different schema" in str(v):
+        pass
+    else:
+        raise
+except Exception as e:
+    raise
+
+spark.sql(
+    "ALTER TABLE ieee_cis.transaction_numerical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
+
+fs.write_table(df=numerical_features, name='ieee_cis.transaction_numerical_features', mode='overwrite')
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ### Offline Feature Store Add / Merge / Update
 # MAGIC Use the `write_table` function to update the feature table values.
@@ -155,7 +192,7 @@ fs.publish_table(
 )
 
 # Add new feature rows. We generate new entries with existing data. Using describe on TransactionID shows the existing range of ID. We create new IDs in the following code line.
-additional_rows = transactions.limit(10).withColumn("TransactionID", col("TransactionID") - 1987000) 
+additional_rows = numerical_features.limit(10).withColumn("TransactionID", col("TransactionID") - 1987000) 
 fs.write_table(df=additional_rows, name=table_name, mode="overwrite") # Upserting uses mode="overwrite"
 
 # Checking if the length of the table changed automatically. This number should be different from the previous query.
