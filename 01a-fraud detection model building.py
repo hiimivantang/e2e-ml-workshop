@@ -65,17 +65,6 @@ numericalCols = ['dist1','dist2']+['C' + str(x) for x in range(1,14)]+['D' + str
 
 # COMMAND ----------
 
-# from pyspark.ml.feature import StringIndexer, OneHotEncoder
-
-
-# stringIndexer = StringIndexer(inputCols=stringCategoricalCols, outputCols=[x + "Index" for x in stringCategoricalCols])
-# cols = stringIndexer.getOutputCols() + categoricalCols
-# stringIndexerModel = stringIndexer.setHandleInvalid('keep').fit(transactions)
-# transformed_df = stringIndexerModel.transform(transactions).select(cols)
-
-
-# COMMAND ----------
-
 import pyspark.pandas as ps
 import numpy as np
 
@@ -176,7 +165,7 @@ from databricks.feature_store import FeatureStoreClient
 import mlflow
 
 fs = FeatureStoreClient()
-
+mlflow.xgboost.autolog()
 
 with mlflow.start_run():
   training_set = fs.create_training_set(
@@ -191,11 +180,4 @@ with mlflow.start_run():
   train_dict = fit(X=X_train, y=y_train)
   xgb_model = train_dict['model']
   mlflow.log_metric('loss', train_dict['loss'])
-
-# COMMAND ----------
-
-
-
-# COMMAND ----------
-
-
+  

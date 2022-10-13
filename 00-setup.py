@@ -5,7 +5,7 @@
 
 import gdown
 
-gdown.download("https://drive.google.com/file/d/1Oa8AI1jHmiCdYG1VT_6Fc4vdW9UgwHMq/view?usp=sharing", output='/dbfs/tmp/raw_transaction.csv', fuzzy=True)
+gdown.download("https://drive.google.com/file/d/10h1LU7v_Jd5cXasqxyTjrCXJ33Qx43e1/view?usp=sharing", output='/dbfs/tmp/raw_transaction.csv', fuzzy=True)
 gdown.download("https://drive.google.com/file/d/15HPqrOJlZ_NpPyfjTUQagQjQeKIurf04/view?usp=sharing", output='/dbfs/tmp/raw_identity.csv', fuzzy=True)
 
 # COMMAND ----------
@@ -29,7 +29,3 @@ spark.sql('DROP TABLE IF EXISTS ieee_cis.raw_transaction')
 
 identity_df.write.format("delta").mode('overwrite').saveAsTable("ieee_cis.raw_identity")
 transaction_df.write.format("delta").mode('overwrite').saveAsTable("ieee_cis.raw_transaction")
-
-# COMMAND ----------
-
-
