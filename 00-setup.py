@@ -20,6 +20,12 @@ transaction_df = transaction_df.toDF(*columns)
 
 # COMMAND ----------
 
+identity_df = spark.read.option('inferSchema','true').option('header','true').csv('/tmp/raw_identity.csv')
+transaction_df = spark.read.option("inferSchema", True).option('header','true').csv('/tmp/raw_transaction.csv')
+
+
+# COMMAND ----------
+
 spark.sql('CREATE DATABASE IF NOT EXISTS ieee_cis')
 
 # COMMAND ----------
