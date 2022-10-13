@@ -16,9 +16,9 @@
 
 ## (julie) 02-feature store deep dive
 
-- [ ] Adding new features to existing feature table
-- [ ] Merge/upsert feature tables
-- [ ] Publishing features to online store i.e. DynamoDB
+- [x] Adding new features to existing feature table
+- [x] Merge/upsert feature tables
+- [x] Publishing features to online store i.e. DynamoDB
 
 ## (ivan) 03-MLOps CI/CD and webhooks 
 
