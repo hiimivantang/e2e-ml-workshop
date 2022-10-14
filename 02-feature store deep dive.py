@@ -123,7 +123,9 @@ dbutils.secrets.get('dynamodb','uswest-fs-secret-access-key')
 
 # Connecting to our online feature store (with DynamoDB)
 from databricks.feature_store.online_store_spec import AmazonDynamoDBSpec
-online_store = AmazonDynamoDBSpec(region='us-west-1', read_secret_prefix='dynamodb/uswest-fs', write_secret_prefix='dynamodb/uswest-fs') 
+online_store = AmazonDynamoDBSpec(region='us-west-1', 
+                                  read_secret_prefix='dynamodb-read-only/uswest-fs', 
+                                  write_secret_prefix='dynamodb/uswest-fs') 
 
 # COMMAND ----------
 
@@ -155,8 +157,23 @@ print(len(dynamodb_feature_table.scan()['Items']))
 
 # COMMAND ----------
 
+table_name
+
+# COMMAND ----------
+
+from databricks.feature_store import FeatureStoreClient
+fs = FeatureStoreClient()
+
 fs.publish_table(
   name=table_name,
+  online_store=online_store,
+  mode='merge'
+)
+
+# COMMAND ----------
+
+fs.publish_table(
+  name='ieee_cis.transaction_categorical_features',
   online_store=online_store,
   mode='merge'
 )
