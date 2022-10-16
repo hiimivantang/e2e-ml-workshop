@@ -1,9 +1,15 @@
 # Databricks notebook source
+dbutils.widgets.text("db_name", "ml_workshop")
+
+# COMMAND ----------
+
 import numpy as np                   # array, vector, matrix calculations
 import pandas as pd                  # DataFrame handling
 import mlflow.pyfunc
 import mlflow.spark
 from pyspark.sql.functions import col
+
+DB_NAME = dbutils.widgets.get("db_name")
 
 # COMMAND ----------
 
@@ -13,7 +19,7 @@ from pyspark.sql.functions import col
 
 # COMMAND ----------
 
-transactions = table('ieee_cis.raw_transaction')
+transactions = table(f'{DB_NAME}.raw_transaction')
 display(transactions)
 
 # COMMAND ----------
@@ -40,10 +46,10 @@ numerical_features = numerical_features.toDF(*(c.replace(' ', '_') for c in nume
 
 try:
     numerical_feature_table = fs.create_table(
-        name='ieee_cis.transaction_numerical_features',
+        name=f'{DB_NAME}.transaction_numerical_features',
         primary_keys='TransactionID',
         schema=numerical_features.schema,
-        description='These features are derived from ieee_cis.raw_transactions and the label column (isFraud) has being dropped'
+        description=f'These features are derived from {DB_NAME}.raw_transactions and the label column (isFraud) has being dropped'
     )
 except ValueError as v:
     if "already exists with a different schema" in str(v):
@@ -53,10 +59,9 @@ except ValueError as v:
 except Exception as e:
     raise
 
-spark.sql(
-    "ALTER TABLE ieee_cis.transaction_numerical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
+spark.sql(f"ALTER TABLE {DB_NAME}.transaction_numerical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
 
-fs.write_table(df=numerical_features, name='ieee_cis.transaction_numerical_features', mode='overwrite')
+fs.write_table(df=numerical_features, name=f'{DB_NAME}.transaction_numerical_features', mode='overwrite')
 
 # COMMAND ----------
 
@@ -90,20 +95,21 @@ fs.write_table(df=numerical_features, name='ieee_cis.transaction_numerical_featu
 
 # Adding/Merging new feature (sum of two cards statements) to the existing numerical feature table
 additional_features = transactions.withColumn("cardSum", col("card1") + col("card2"))
-fs.write_table(df=additional_features[["TransactionID", "cardSum"]], name="ieee_cis.transaction_numerical_features", mode="merge") # Adding and merging uses mode="merge"
+
+fs.write_table(df=additional_features[["TransactionID", "cardSum"]], name=f"{DB_NAME}.transaction_numerical_features", mode="merge") # Adding and merging uses mode="merge"
 
 # Check if it has been added correctly
-display(table("ieee_cis.transaction_numerical_features").select(*["TransactionID","cardSum"]))
+display(table(f"{DB_NAME}.transaction_numerical_features").select(*["TransactionID","cardSum"]))
 
 # COMMAND ----------
 
 # Updating new feature (sum of two different cards statements) to the existing numerical feature table
 additional_features = transactions.withColumn("cardSum", col("card3") + col("card5"))
 
-fs.write_table(df=additional_features[["TransactionID", "cardSum"]], name="ieee_cis.transaction_numerical_features", mode="overwrite") # Upserting uses mode="overwrite"
+fs.write_table(df=additional_features[["TransactionID", "cardSum"]], name=f"{DB_NAME}.transaction_numerical_features", mode="overwrite") # Upserting uses mode="overwrite"
 
 # Exercice: Check if cardSum has been overwritten. 
-# Answer: display(table("ieee_cis.transaction_numerical_features").select(*["TransactionID","cardSum"]))
+# Answer: display(table(f"{DB_NAME}.transaction_numerical_features").select(*["TransactionID","cardSum"]))
 
 # COMMAND ----------
 
@@ -144,20 +150,9 @@ dynamodb = get_dynamodb()
 
 # COMMAND ----------
 
-# Querying the length of the table where we want to store our online features. This fails when the table has not been created yet. 
-table_name = "ieee_cis.transaction_numerical_features"
-dynamodb_feature_table = dynamodb.Table(table_name)
-print(len(dynamodb_feature_table.scan()['Items']))
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ##### Publish batch-computed features to the online store 
 # MAGIC You can create and schedule a Databricks job to regularly publish updated features. This job can also include the code to calculate the updated features, or you can create and run separate jobs to calculate and publish feature updates.
-
-# COMMAND ----------
-
-table_name
 
 # COMMAND ----------
 
@@ -165,15 +160,13 @@ from databricks.feature_store import FeatureStoreClient
 fs = FeatureStoreClient()
 
 fs.publish_table(
-  name=table_name,
+  name=f"{DB_NAME}.transaction_numerical_features",
   online_store=online_store,
   mode='merge'
 )
 
-# COMMAND ----------
-
 fs.publish_table(
-  name='ieee_cis.transaction_categorical_features',
+  name=f'{DB_NAME}.transaction_categorical_features',
   online_store=online_store,
   mode='merge'
 )
@@ -181,7 +174,8 @@ fs.publish_table(
 # COMMAND ----------
 
 # TODO: query more than the dynamodb scan limitation of 1MB
-print(len(dynamodb_feature_table.scan()['Items']))
+
+print(len(dynamodb.Table(f"{DB_NAME}.transaction_numerical_features").scan()['Items']))
 
 # COMMAND ----------
 
@@ -190,7 +184,7 @@ print(len(dynamodb_feature_table.scan()['Items']))
 # MAGIC To continuously stream features to the online store, set `streaming=True`.
 # MAGIC ```
 # MAGIC fs.publish_table(
-# MAGIC   name='ieee_cis.transaction_numerical_features',
+# MAGIC   name='{DATABASE_NAME}.transaction_numerical_features',
 # MAGIC   online_store=online_store,
 # MAGIC   mode='merge',
 # MAGIC   streaming=True
@@ -199,14 +193,17 @@ print(len(dynamodb_feature_table.scan()['Items']))
 
 # COMMAND ----------
 
-# Exercice: Stream the ieee_cis.transaction_numerical_features feature table into the online store and make a change in the offline table to see if it is triggered in the online store.
+# Exercice: Stream the {DATABASE_NAME}.transaction_numerical_features feature table into the online store and make a change in the offline table to see if it is triggered in the online store.
 # Setting the offline feature table to streaming to the online store
 fs.publish_table(
-  name=table_name,
+  name=f"{DB_NAME}.transaction_numerical_features",
   online_store=online_store,
   mode='merge',
   streaming=True
 )
+
+
+# COMMAND ----------
 
 # Add new feature rows. We generate new entries with existing data. Using describe on TransactionID shows the existing range of ID. We create new IDs in the following code line.
 additional_rows = numerical_features.limit(10).withColumn("TransactionID", col("TransactionID") - 1987000) 
