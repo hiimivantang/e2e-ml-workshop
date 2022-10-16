@@ -1,5 +1,5 @@
 # Databricks notebook source
-# MAGIC %run ./00-setup
+dbutils.widgets.text("db_name", "ml_workshop")
 
 # COMMAND ----------
 
@@ -12,6 +12,8 @@ import mlflow.pyfunc
 import mlflow.spark
 import os
 
+DB_NAME = dbutils.widgets.get("db_name")
+
 # COMMAND ----------
 
 # MAGIC %md
@@ -22,7 +24,7 @@ import os
 
 # COMMAND ----------
 
-transactions = table('ieee_cis.raw_transaction')
+transactions = table(f'{DB_NAME}.raw_transaction')
 display(transactions.describe())
 
 # COMMAND ----------
@@ -78,15 +80,20 @@ categorical_features = categorical_features.toDF(*(c.replace(' ', '_') for c in 
 
 # COMMAND ----------
 
+print(len(numerical_features.columns))
+print(len(categorical_features.columns))
+
+# COMMAND ----------
+
 from databricks.feature_store import FeatureStoreClient
 fs = FeatureStoreClient()
 
 try:
     categorical_feature_table = fs.create_table(
-        name='ieee_cis.transaction_categorical_features',
+        name=f'{DB_NAME}.transaction_categorical_features',
         primary_keys='TransactionID',
         schema=categorical_features.schema,
-        description='These features are derived from ieee_cis.raw_transactions and the label column (isFraud) has being dropped'
+        description=f'These features are derived from {DB_NAME}.raw_transactions and the label column (isFraud) has being dropped'
     )
 except ValueError as v:
     if "already exists with a different schema" in str(v):
@@ -96,19 +103,18 @@ except ValueError as v:
 except Exception as e:
     raise
 
-spark.sql(
-    "ALTER TABLE ieee_cis.transaction_categorical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
+spark.sql(f"ALTER TABLE {DB_NAME}.transaction_categorical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
 
-fs.write_table(df=categorical_features, name='ieee_cis.transaction_categorical_features', mode='overwrite')
+fs.write_table(df=categorical_features, name=f'{DB_NAME}.transaction_categorical_features', mode='overwrite')
 
 # COMMAND ----------
 
 try:
     numerical_feature_table = fs.create_table(
-        name='ieee_cis.transaction_numerical_features',
+        name=f'{DB_NAME}.transaction_numerical_features',
         primary_keys='TransactionID',
         schema=numerical_features.schema,
-        description='These features are derived from ieee_cis.raw_transactions and the label column (isFraud) has being dropped'
+        description=f'These features are derived from {DB_NAME}.raw_transactions and the label column (isFraud) has being dropped'
     )
 except ValueError as v:
     if "already exists with a different schema" in str(v):
@@ -118,9 +124,8 @@ except ValueError as v:
 except Exception as e:
     raise
 
-spark.sql(
-    "ALTER TABLE ieee_cis.transaction_numerical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
-fs.write_table(df=numerical_features, name='ieee_cis.transaction_numerical_features', mode='overwrite')
+spark.sql(f"ALTER TABLE {DB_NAME}.transaction_numerical_features SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name','delta.minReaderVersion' = '2','delta.minWriterVersion' = '5')")
+fs.write_table(df=numerical_features, name=f'{DB_NAME}.transaction_numerical_features', mode='overwrite')
 
 # COMMAND ----------
 
@@ -128,11 +133,11 @@ from databricks.feature_store import FeatureLookup
 
 feature_lookups = [
     FeatureLookup(
-        table_name='ieee_cis.transaction_numerical_features',
+        table_name=f'{DB_NAME}.transaction_numerical_features',
         lookup_key=['TransactionID']
     ),
     FeatureLookup(
-        table_name='ieee_cis.transaction_categorical_features',
+        table_name=f'{DB_NAME}.transaction_categorical_features',
         lookup_key=['TransactionID']
     )
 ]
@@ -168,7 +173,7 @@ mlflow.xgboost.autolog()
 
 with mlflow.start_run():
     training_set = fs.create_training_set(
-        df=table('ieee_cis.raw_transaction').select(*['TransactionID', 'isFraud']),
+        df=table(f'{DB_NAME}.raw_transaction').select(*['TransactionID', 'isFraud']),
         feature_lookups=feature_lookups,
         label='isFraud')
 
@@ -188,34 +193,3 @@ with mlflow.start_run():
       training_set=training_set,
       registered_model_name="model_fraud"
     )
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ### Use the logged model for inference 
-# MAGIC We use the model we have just trained on the Feature Store. By passing it only the TransactionID, it will automatically fetch other features in the Feature Store and predict the probability that the transaction ID is a fraud.
-
-# COMMAND ----------
-
-from pyspark.sql.types import StructType, StructField, IntegerType
-
-# We create a DataFrame with an existing transactionID we want to test (2995503)
-schema = StructType([StructField("TransactionID", IntegerType(), True)])
-inference_df = spark.createDataFrame(pd.DataFrame(columns=["TransactionID"], data=[2995503]), schema=schema)
-predictions = fs.score_batch(
-  'models:/model_fraud/1',
-  df=inference_df
-)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC Here are the results. During inference, the features related to the TransactionID number 2995503 were looked up to predict the fraud probability.
-
-# COMMAND ----------
-
-display(predictions)
-
-# COMMAND ----------
-
-display(predictions.select("TransactionID", "prediction"))
