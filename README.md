@@ -1,14 +1,16 @@
 # :robot: e2e-ml-workshop :robot:
 
+![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Fitang%2Fbp1IENmB0h.png?alt=media&token=4eb73f42-649c-4599-aebc-07a97674337a)
+
 ## 00-setup.py
 
 - [x] Downloading fraud model training datasets from Google drive.
 - [x] Original datasets are from https://www.kaggle.com/competitions/ieee-fraud-detection/data
-- [ ] (ivan) DLT with autoloader
+- [x] DLT with autoloader
 
 ## 01a-fraud detection model building.py 
 
-- [ ] Show high-level solution architecture
+- [x] Show high-level solution architecture
 - [x] Feature engineering
 - [x] Registering features into multiple feature tables
 - [x] Model training and experiment auto-tracking with mlflow
@@ -20,15 +22,15 @@
 - [x] Merge/upsert feature tables
 - [x] Publishing features to online store i.e. DynamoDB
 
-## (ivan) 03-MLOps CI/CD and webhooks 
+## 03-MLOps CI/CD and webhooks 
 
-- [ ] Illustrate how CI/CD tooling (e.g. Jenkins) is integrated with model registry
-- [ ] Setup webhooks for trigger CI build, i.e. model signature and bias testing
+- [x] Illustrate how CI/CD tooling (e.g. Jenkins) is integrated with model registry
+- [x] Setup webhooks for trigger CI build, i.e. model signature and bias testing
 
-## (julie) 04-Realtime inference with automatic feature lookup (from online store)
+## 04-Realtime inference with automatic feature lookup (from online store)
 - [x] Illustrate how serverless model endpoint is integrated with offline/online feature store for automatic feature lookup
-- [ ] Deploy model serving endpoint
-- [ ] Score the deployed model via REST API request
+- [x] Deploy model serving endpoint
+- [x] Score the deployed model via REST API request
 
 
 
