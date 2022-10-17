@@ -157,17 +157,25 @@ dynamodb = get_dynamodb()
 # COMMAND ----------
 
 from databricks.feature_store import FeatureStoreClient
+import random
+
 fs = FeatureStoreClient()
+
+row_count = transactions.count()
+transaction_id = transactions.select('TransactionID').collect()[random.randint(0,row_count-1)]['TransactionID']
+
 
 fs.publish_table(
   name=f"{DB_NAME}.transaction_numerical_features",
   online_store=online_store,
+  filter_condition=f"TransactionID={transaction_id}", #filter so the whole workshop will not be publish full feature store to online store at the same time
   mode='merge'
 )
 
 fs.publish_table(
   name=f'{DB_NAME}.transaction_categorical_features',
   online_store=online_store,
+  filter_condition=f"TransactionID={transaction_id}",  #filter so the whole workshop will not be publish full feature store to online store at the same time
   mode='merge'
 )
 
