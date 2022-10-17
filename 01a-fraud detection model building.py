@@ -1,4 +1,9 @@
 # Databricks notebook source
+# MAGIC %md
+# MAGIC ![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Fitang%2FHHldXpE2Xi.png?alt=media&token=eac22a29-acd6-4936-afe8-0a1389910faf)
+
+# COMMAND ----------
+
 dbutils.widgets.text("db_name", "ml_workshop")
 
 # COMMAND ----------
