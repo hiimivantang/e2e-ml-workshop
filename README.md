@@ -1,6 +1,6 @@
 # :robot: e2e-ml-workshop :robot:
 
-![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Fitang%2Fbp1IENmB0h.png?alt=media&token=4eb73f42-649c-4599-aebc-07a97674337a)
+![](https://firebasestorage.googleapis.com/v0/b/firescript-577a2.appspot.com/o/imgs%2Fapp%2Fitang%2FHHldXpE2Xi.png?alt=media&token=eac22a29-acd6-4936-afe8-0a1389910faf)
 
 ## 00-setup.py
 
