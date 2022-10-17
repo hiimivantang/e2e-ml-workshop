@@ -3,6 +3,12 @@
 
 # COMMAND ----------
 
+# MAGIC %sh
+# MAGIC mkdir /dbfs/tmp/transaction
+# MAGIC mkdir /dbfs/tmp/identity
+
+# COMMAND ----------
+
 import gdown
 
 gdown.download("https://drive.google.com/file/d/16ICDQQkWRdx2D6ixcQ0CTfmXkXiIrPfe/view?usp=sharing", output='/dbfs/tmp/transaction/raw_transaction.csv', fuzzy=True)
